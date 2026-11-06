@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Questions - RC3 Job Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .question-text{font-size:1.35rem;line-height:1.55;max-width:70ch}
+        .question-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+        .question-nav button{min-width:40px}
+        .question-nav button[aria-current="true"]{outline:2px solid var(--ac)}
+        .ask-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0}
+    </style>
+</head>
+<body class="theme-recruiter">
+    <main id="content" class="d-content">
+        <section class="d-panel">
+            <div class="d-panel-head">
+                <div><h3 id="candidate-name">Interview questions</h3><p class="sub" id="candidate-meta">Loading saved questions...</p></div>
+                <div class="row"><a class="btn btn-secondary btn-sm" id="review-link" href="jobs.html">Applicant review</a><a class="btn btn-secondary btn-sm" href="interviews.html">Interviews</a></div>
+            </div>
+            <div id="error-box" class="form-error hidden" role="alert"></div>
+            <div id="empty-state" class="hidden">
+                <p>No questions have been saved for this applicant yet.</p>
+                <button class="btn" id="generate-btn" type="button">Generate and save questions</button>
+            </div>
+        </section>
+        <section id="ask-panel" class="d-panel hidden" aria-live="polite">
+            <div class="d-panel-head">
+                <div><h3 id="counter">Question</h3><p class="sub">Saved interview question</p></div>
+                <div class="ask-meta"><span class="d-badge info" id="level"></span><span class="d-badge" id="skill"></span><span class="d-badge" id="asked-state"></span></div>
+            </div>
+            <h2 class="question-text" id="question-text"></h2>
+            <div class="row">
+                <button class="btn btn-secondary btn-sm" id="guideline-btn" type="button" aria-expanded="false">Show answer guidance</button>
+                <button class="btn btn-secondary btn-sm" id="asked-btn" type="button">Mark as asked</button>
+            </div>
+            <p class="d-item hidden" id="guideline"></p>
+            <div class="row" style="margin-top:20px">
+                <button class="btn btn-secondary" id="previous-btn" type="button">Previous</button>
+                <button class="btn" id="next-btn" type="button">Next question</button>
+            </div>
+            <nav class="question-nav" id="question-nav" aria-label="Interview questions"></nav>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    <script src="js/mock.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        const user = guardPage('recruiter');
+        const applicationId = new URLSearchParams(location.search).get('applicationId');
+        let questions = [];
+        let currentIndex = 0;
+
+        function el(id) { return document.getElementById(id); }
+        function esc(value) { return Dash.esc(value == null ? '' : value); }
+        function showError(message) { el('error-box').textContent = message; el('error-box').classList.toggle('hidden', !message); }
+
+        function renderQuestion()
+        {
+            const question = questions[currentIndex];
+            if (!question) return;
+            el('counter').textContent = 'Question ' + (currentIndex + 1) + ' of ' + questions.length;
+            el('level').textContent = question.level;
+            el('skill').textContent = question.skill || 'General';
+            el('question-text').textContent = question.text;
+            el('asked-state').textContent = question.askedAt ? 'Asked' : 'Not asked';
+            el('asked-btn').textContent = question.askedAt ? 'Mark as not asked' : 'Mark as asked';
+            el('guideline').textContent = question.guideline || 'No answer guidance saved.';
+            el('guideline').classList.add('hidden');
+            el('guideline-btn').textContent = 'Show answer guidance';
+            el('guideline-btn').setAttribute('aria-expanded', 'false');
+            el('previous-btn').disabled = currentIndex === 0;
+            el('next-btn').textContent = currentIndex === questions.length - 1 ? 'Finish questions' : 'Next question';
+            el('question-nav').innerHTML = questions.map(function (item, index) {
+                return '<button class="btn btn-secondary btn-sm" type="button" data-question-index="' + index + '" aria-label="Go to question ' + (index + 1) + '" aria-current="' + (index === currentIndex) + '">' + (item.askedAt ? '✓ ' : '') + (index + 1) + '</button>';
+            }).join('');
+        }
+
+        async function load()
+        {
+            if (!applicationId) { showError('No applicant was selected. Open this screen from applicant review or an interview.'); return; }
+            try
+            {
+                const results = await Promise.all([
+                    Api.get('/api/applications/' + encodeURIComponent(applicationId)),
+                    Api.get('/api/applications/' + encodeURIComponent(applicationId) + '/questions'),
+                ]);
+                const application = results[0];
+                questions = results[1];
+                el('candidate-name').textContent = application.candidateName + ' · Interview questions';
+                el('candidate-meta').textContent = [application.jobTitle, application.status].filter(Boolean).join(' · ');
+                el('review-link').href = 'applicant-detail.html?id=' + encodeURIComponent(applicationId);
+                el('empty-state').classList.toggle('hidden', questions.length > 0);
+                el('ask-panel').classList.toggle('hidden', questions.length === 0);
+                if (questions.length) renderQuestion();
+            }
+            catch (error) { showError(error.message); }
+        }
+
+        if (user)
+        {
+            Dash.mountShell({ user: user, logo: 'messages-square', title: 'Interview questions', subtitle: 'Ask and track saved questions', search: false, items: [{ label: 'Overview', href: 'recruiter.html', icon: 'layout-dashboard' }, { label: 'Jobs', href: 'jobs.html', icon: 'briefcase' }, { label: 'Interviews', href: 'interviews.html', icon: 'calendar-clock' }] });
+            el('previous-btn').addEventListener('click', function () { if (currentIndex > 0) { currentIndex -= 1; renderQuestion(); } });
+            el('next-btn').addEventListener('click', function () { if (currentIndex < questions.length - 1) { currentIndex += 1; renderQuestion(); } });
+            el('guideline-btn').addEventListener('click', function () {
+                const isHidden = el('guideline').classList.toggle('hidden');
+                el('guideline-btn').textContent = isHidden ? 'Show answer guidance' : 'Hide answer guidance';
+                el('guideline-btn').setAttribute('aria-expanded', String(!isHidden));
+            });
+            el('asked-btn').addEventListener('click', async function () {
+                const question = questions[currentIndex];
+                const asked = !question.askedAt;
+                el('asked-btn').disabled = true;
+                try {
+                    const updated = await Api.patch('/api/questions/' + encodeURIComponent(question._id) + '/asked', { asked: asked });
+                    questions[currentIndex] = updated;
+                    renderQuestion();
+                } catch (error) { showError(error.message); }
+                finally { el('asked-btn').disabled = false; }
+            });
+            el('question-nav').addEventListener('click', function (event) {
+                const button = event.target.closest('[data-question-index]');
+                if (button) { currentIndex = Number(button.getAttribute('data-question-index')); renderQuestion(); }
+            });
+            el('generate-btn').addEventListener('click', async function () {
+                showError('');
+                el('generate-btn').disabled = true;
+                try { await Api.post('/api/applications/' + encodeURIComponent(applicationId) + '/questions/generate'); await load(); }
+                catch (error) { showError(error.message); }
+                finally { el('generate-btn').disabled = false; }
+            });
+            load();
+        }
+    </script>
+</body>
+</html>

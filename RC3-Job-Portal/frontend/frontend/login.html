@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in – VEYRA</title>
+    <meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#11132F" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#171A45">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <script src="js/brand.js"></script>
+    <script>showPageLoader(); window.addEventListener('load', hidePageLoader);</script>
+
+    <div class="auth-shell">
+        <aside class="auth-stage" id="stage"></aside>
+
+        <main class="auth-panel">
+            <div class="auth-form" id="auth-form">
+                <h1>Welcome back</h1>
+                <p class="subtitle">Log in to your VEYRA account.</p>
+
+                <div id="form-error" class="form-error hidden" role="alert"></div>
+
+                <form id="login-form" novalidate>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+                        <div class="error-text" id="email-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="pw-wrap">
+                            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+                            <button type="button" class="pw-toggle" aria-label="Show password" aria-pressed="false">Show</button>
+                        </div>
+                        <div class="error-text" id="password-error"></div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="btn btn-accent btn-block">Log in</button>
+                </form>
+
+                <div class="auth-footer">
+                    New here? <a href="register.html">Create an account</a>
+                </div>
+
+                <div id="demo-hint" class="auth-footer hidden">
+                    Demo accounts (password 12345678):<br>
+                    recruiter@test.com or candidate@test.com
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/icons.js"></script>
+    <script src="js/illustrations.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/mock.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const form = document.getElementById('login-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitButton = document.getElementById('submit-btn');
+        const formPanel = document.getElementById('auth-form');
+
+        mountAuthStage('Every AI assessment links back to the resume evidence. You make the final decision.');
+        authBindPasswordToggles();
+
+        const existingUser = getUser();
+
+        if (getToken() && existingUser)
+        {
+            authRedirect(dashboardFor(existingUser.role), 0);
+        }
+
+        if (USE_MOCK)
+        {
+            document.getElementById('demo-hint').classList.remove('hidden');
+        }
+
+        const validateEmail = authBindField(emailInput, function ()
+        {
+            const email = emailInput.value.trim();
+
+            if (!email)
+            {
+                return 'Enter your email.';
+            }
+
+            if (!AUTH_EMAIL_PATTERN.test(email))
+            {
+                return 'Enter a valid email, like name@example.com.';
+            }
+
+            return '';
+        });
+
+        const validatePassword = authBindField(passwordInput, function ()
+        {
+            if (!passwordInput.value)
+            {
+                return 'Enter your password.';
+            }
+
+            return '';
+        });
+
+        form.addEventListener('submit', async function (event)
+        {
+            event.preventDefault();
+            authHideFormError();
+
+            const emailOk = validateEmail();
+            const passwordOk = validatePassword();
+
+            if (!emailOk)
+            {
+                emailInput.focus();
+                return;
+            }
+
+            if (!passwordOk)
+            {
+                passwordInput.focus();
+                return;
+            }
+
+            setLoading(submitButton, true);
+
+            try
+            {
+                const data = await Api.post('/api/auth/login',
+                {
+                    email: emailInput.value.trim(),
+                    password: passwordInput.value
+                });
+
+                saveSession(data.token, data.user);
+                authRedirect(dashboardFor(data.user.role), 0);
+            }
+            catch (error)
+            {
+                authShowFormError(error.message);
+                shake(formPanel);
+                setLoading(submitButton, false);
+            }
+        });
+
+        emailInput.addEventListener('input', authHideFormError);
+        passwordInput.addEventListener('input', authHideFormError);
+    </script>
+    <script src="js/constellation.js"></script>
+</body>
+</html>

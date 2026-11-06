@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My profile – VEYRA</title>
+    <meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#11132F" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#171A45">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/candidate.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/profile-polish.css">
+</head>
+<body class="theme-candidate">
+    <script src="js/brand.js"></script>
+    <script>showPageLoader(); window.addEventListener('load', hidePageLoader);</script>
+    <div id="content" class="d-content">
+        <div id="load-box"></div>
+
+        <form id="profile-form" class="hidden" novalidate>
+            <section class="d-panel cd-strength" id="strength-panel" aria-label="Profile strength" style="--i:0"></section>
+
+            <section class="d-panel" aria-label="About you" style="--i:1">
+                <h3>About you</h3>
+                <p class="sub">This is what we read from your resume. Fix anything that does not look like you.</p>
+                <p class="d-hint" id="who-line"></p>
+                <p class="d-hint" id="source-line"></p>
+                <p class="d-hint" id="saved-line"></p>
+                <div class="d-form-grid" style="margin-top:14px">
+                    <div>
+                        <label for="phone-input">Phone</label>
+                        <input type="text" id="phone-input" placeholder="For example +92 300 1234567" autocomplete="tel">
+                    </div>
+                    <div>
+                        <label for="headline-input">Headline</label>
+                        <input type="text" id="headline-input" placeholder="For example Backend Developer">
+                    </div>
+                </div>
+            </section>
+
+            <section class="d-panel" aria-label="Skills" style="--i:2">
+                <h3>Skills</h3>
+                <p class="sub">The skills we found in your resume</p>
+                <div class="pr-skill-add">
+                    <div>
+                        <label for="skill-input">Add a skill</label>
+                        <input type="text" id="skill-input" placeholder="For example Python, Docker" autocomplete="off">
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="add-skill"><i data-lucide="plus" style="width:14px;height:14px"></i>Add skill</button>
+                </div>
+                <p class="error-text" id="skills-error" role="alert"></p>
+                <p class="cd-vh" id="skills-status" role="status" aria-live="polite"></p>
+                <div id="skills-rows"></div>
+                <p class="d-hint">A flagged skill means our parser could not find it in your resume text. Check the spelling or remove it. You cannot confirm a skill yourself, because a person reviews every correction before it is confirmed.</p>
+            </section>
+
+            <section class="d-panel" aria-label="Education" style="--i:3">
+                <div class="d-panel-head">
+                    <div>
+                        <h3>Education</h3>
+                        <p class="sub">Your qualifications and where you studied</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="add-education"><i data-lucide="plus" style="width:14px;height:14px"></i>Add education</button>
+                </div>
+                <div id="education-rows" style="margin-top:14px"></div>
+            </section>
+
+            <section class="d-panel" aria-label="Experience" style="--i:4">
+                <div class="d-panel-head">
+                    <div>
+                        <h3>Experience</h3>
+                        <p class="sub">The roles you have held</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="add-experience"><i data-lucide="plus" style="width:14px;height:14px"></i>Add experience</button>
+                </div>
+                <div id="experience-rows" style="margin-top:14px"></div>
+            </section>
+
+            <section class="d-panel" aria-label="Projects" style="--i:5">
+                <div class="d-panel-head">
+                    <div>
+                        <h3>Projects</h3>
+                        <p class="sub">Work you have built that you are proud of</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="add-project"><i data-lucide="plus" style="width:14px;height:14px"></i>Add project</button>
+                </div>
+                <div id="projects-rows" style="margin-top:14px"></div>
+            </section>
+
+            <section class="d-panel" aria-label="Save your corrections" style="--i:6">
+                <div class="d-callout">
+                    <i data-lucide="shield-check"></i>
+                    <div>
+                        <b>Corrections are reviewed by a person</b>
+                        <p>Saving updates your profile details right away and sends your corrections to our team for review. A flagged skill stays flagged until a person confirms it, so nothing about your application changes silently.</p>
+                    </div>
+                </div>
+                <p class="error-text" id="save-error" role="alert"></p>
+                <div id="cancel-confirm" class="hidden">
+                    <div class="d-callout warn" style="margin-bottom:0">
+                        <i data-lucide="triangle-alert"></i>
+                        <div>
+                            <b>Discard unsaved changes?</b>
+                            <p>This will reload your saved profile and drop the edits you just made.</p>
+                            <div class="row" style="margin-top:10px">
+                                <button type="button" class="btn btn-sm btn-danger" id="discard-btn">Discard changes</button>
+                                <button type="button" class="btn btn-sm btn-secondary" id="keep-btn">Keep editing</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-actions" style="border-top:0;padding-top:6px">
+                    <button type="submit" class="btn" id="save-btn"><i data-lucide="save" style="width:16px;height:16px"></i>Save corrections</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel changes</button>
+                </div>
+            </section>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    <script src="js/icons.js"></script>
+    <script src="js/illustrations.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/mock.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/candidate-shared.js"></script>
+    <script>
+        const user = guardPage('candidate');
+        const GROUP_NAMES = ['education', 'experience', 'projects'];
+        const ADD_BUTTONS = { education: 'add-education', experience: 'add-experience', projects: 'add-project' };
+        const REVEAL_KEY_PREFIX = 'soryn-profile-reveal-';
+        const FLAG_TIP = "We couldn't find this in your resume text. Check it or remove it.";
+        const PANEL_STEP_MS = 200;
+        const PANEL_RISE_MS = 360;
+        const CHIP_STEP_MS = 70;
+        const CHIP_POP_MS = 220;
+        const CHIP_STAGGER_CAP = 14;
+        const CHIP_LEAVE_MS = 150;
+
+        const GROUPS =
+        {
+            education:
+            {
+                heading: 'Education entry',
+                required: ['qualification', 'institution'],
+                fields:
+                [
+                    { key: 'qualification', label: 'Qualification', placeholder: 'For example BS Computer Science' },
+                    { key: 'institution', label: 'Institution', placeholder: 'For example FAST NUCES Lahore' },
+                    { key: 'from', label: 'From', placeholder: 'For example 2018' },
+                    { key: 'to', label: 'To', placeholder: 'For example 2022' }
+                ]
+            },
+            experience:
+            {
+                heading: 'Experience entry',
+                required: ['role', 'company'],
+                fields:
+                [
+                    { key: 'role', label: 'Role', placeholder: 'For example Backend Developer' },
+                    { key: 'company', label: 'Company', placeholder: 'For example VentureDive' },
+                    { key: 'from', label: 'From', placeholder: 'For example 2022-07' },
+                    { key: 'to', label: 'To', placeholder: 'For example Present' },
+                    { key: 'summary', label: 'Summary', placeholder: 'A sentence or two about what you did there', type: 'textarea', wide: true }
+                ]
+            },
+            projects:
+            {
+                heading: 'Project',
+                required: ['name'],
+                fields:
+                [
+                    { key: 'name', label: 'Project name', placeholder: 'For example Freight API' },
+                    { key: 'summary', label: 'Summary', placeholder: 'What the project does and what you built', type: 'textarea', wide: true }
+                ]
+            }
+        };
+
+        let savedProfile = null;
+        let draft = null;
+        let savedSnapshot = '';
+        let openRows = { education: [], experience: [], projects: [] };
+        let revealing = false;
+        let revealTimer = null;
+
+        function el(id)
+        {
+            return document.getElementById(id);
+        }
+
+        function emptyRow(name)
+        {
+            if (name === 'education')
+            {
+                return { qualification: '', institution: '', from: '', to: '' };
+            }
+
+            if (name === 'experience')
+            {
+                return { role: '', company: '', from: '', to: '', summary: '' };
+            }
+
+            return { name: '', summary: '' };
+        }
+
+        function buildDraft(profile)
+        {
+            return {
+                phone: profile.phone || '',
+                headline: profile.headline || '',
+                skills: (profile.skills || []).map(function (skill)
+                {
+                    return { skill: skill.skill || '', verified: skill.verified === true };
+                }),
+                education: (profile.education || []).map(function (row)
+                {
+                    return { qualification: row.qualification || '', institution: row.institution || '', from: row.from || '', to: row.to || '' };
+                }),
+                experience: (profile.experience || []).map(function (row)
+                {
+                    return { role: row.role || '', company: row.company || '', from: row.from || '', to: row.to || '', summary: row.summary || '' };
+                }),
+                projects: (profile.projects || []).map(function (row)
+                {
+                    return { name: row.name || '', summary: row.summary || '' };
+                })
+            };
+        }
+
+        function buildPayload()
+        {
+            return {
+                phone: draft.phone.trim(),
+                headline: draft.headline.trim(),
+                skills: draft.skills.map(function (skill)
+                {
+                    return { skill: skill.skill.trim(), verified: skill.verified };
+                }),
+                education: draft.education.map(function (row)
+                {
+                    return { qualification: row.qualification.trim(), institution: row.institution.trim(), from: row.from.trim(), to: row.to.trim() };
+                }),
+                experience: draft.experience.map(function (row)
+                {
+                    return { role: row.role.trim(), company: row.company.trim(), from: row.from.trim(), to: row.to.trim(), summary: row.summary.trim() };
+                }),
+                projects: draft.projects.map(function (row)
+                {
+                    return { name: row.name.trim(), summary: row.summary.trim() };
+                })
+            };
+        }
+
+        function resetOpenRows()
+        {
+            GROUP_NAMES.forEach(function (name)
+            {
+                openRows[name] = draft[name].map(function ()
+                {
+                    return false;
+                });
+            });
+        }
+
+        function revealKey()
+        {
+            return REVEAL_KEY_PREFIX + String(user.id || user.email);
+        }
+
+        function shouldReveal(profile)
+        {
+            if (!profile.parsedAt)
+            {
+                return false;
+            }
+
+            try
+            {
+                return localStorage.getItem(revealKey()) !== profile.parsedAt;
+            }
+            catch (error)
+            {
+                return false;
+            }
+        }
+
+        function markRevealed(profile)
+        {
+            try
+            {
+                localStorage.setItem(revealKey(), profile.parsedAt);
+            }
+            catch (error)
+            {
+            }
+        }
+
+        function revealLength()
+        {
+            const panelsEnd = 6 * PANEL_STEP_MS + PANEL_RISE_MS;
+            const chipsStart = 2 * PANEL_STEP_MS + 240;
+            const chipCount = Math.min(draft.skills.length, CHIP_STAGGER_CAP);
+            const chipsEnd = chipsStart + chipCount * CHIP_STEP_MS + CHIP_POP_MS;
+
+            return Math.max(panelsEnd, chipsEnd) + 200;
+        }
+
+        function endReveal()
+        {
+            clearTimeout(revealTimer);
+            revealTimer = null;
+            revealing = false;
+            el('profile-form').classList.remove('pr-reveal');
+        }
+
+        function missingFields(name, row)
+        {
+            const group = GROUPS[name];
+
+            return group.fields.filter(function (field)
+            {
+                return group.required.indexOf(field.key) !== -1 && !String(row[field.key] || '').trim();
+            });
+        }
+
+        function missingText(fields)
+        {
+            return 'Please add ' + fields.map(function (field)
+            {
+                return field.label.toLowerCase();
+            }).join(' and ') + ', or remove this entry if it is blank.';
+        }
+
+        function isComplete(name, row)
+        {
+            return missingFields(name, row).length === 0;
+        }
+
+        function strengthInput()
+        {
+            const input =
+            {
+                resumeFileName: savedProfile.resumeFileName,
+                phone: draft.phone.trim(),
+                headline: draft.headline.trim(),
+                skills: draft.skills.filter(function (skill)
+                {
+                    return skill.skill.trim();
+                })
+            };
+
+            GROUP_NAMES.forEach(function (name)
+            {
+                input[name] = draft[name].filter(function (row)
+                {
+                    return isComplete(name, row);
+                });
+            });
+
+            return input;
+        }
+
+        function renderStrength()
+        {
+            const panel = el('strength-panel');
+            const result = CandidateKit.strength(strengthInput());
+            const ring = panel.querySelector('.cd-ring');
+
+            if (ring)
+            {
+                ring.setAttribute('data-p', result.percent);
+                ring.setAttribute('aria-label', 'Profile strength ' + result.percent + ' percent');
+                ring.style.setProperty('--p', result.percent);
+                ring.querySelector('b').textContent = result.percent + '%';
+                panel.querySelector('[data-suggestion]').textContent = result.suggestion;
+                return;
+            }
+
+            panel.innerHTML = CandidateKit.ringHtml(result.percent) +
+                '<div><h3>Profile strength</h3><p data-suggestion>' + Dash.esc(result.suggestion) + '</p></div>';
+            CandidateKit.animateRings(panel);
+        }
+
+        function fieldHtml(field, row)
+        {
+            const value = Dash.esc(row[field.key] || '');
+            const wide = field.wide ? ' class="full"' : '';
+
+            if (field.type === 'textarea')
+            {
+                return '<div' + wide + '><label>' + field.label + '<textarea rows="2" data-field="' + field.key + '" placeholder="' + field.placeholder + '">' + value + '</textarea></label></div>';
+            }
+
+            return '<div' + wide + '><label>' + field.label + '<input type="text" data-field="' + field.key + '" value="' + value + '" placeholder="' + field.placeholder + '"></label></div>';
+        }
+
+        function datesText(row)
+        {
+            if (row.from && row.to)
+            {
+                return row.from + ' to ' + row.to;
+            }
+
+            return row.from || row.to || '';
+        }
+
+        function viewHtml(name, row)
+        {
+            if (name === 'education')
+            {
+                return '<div class="pr-view"><b>' + Dash.esc(row.qualification) + '</b><p>' + Dash.esc(row.institution) + '</p>' +
+                    (datesText(row) ? '<p>' + Dash.esc(datesText(row)) + '</p>' : '') + '</div>';
+            }
+
+            if (name === 'experience')
+            {
+                return '<div class="pr-view"><b>' + Dash.esc(row.role) + '</b><p>' + Dash.esc(row.company) + (datesText(row) ? ', ' + Dash.esc(datesText(row)) : '') + '</p>' +
+                    (row.summary ? '<p>' + Dash.esc(row.summary) + '</p>' : '') + '</div>';
+            }
+
+            return '<div class="pr-view"><b>' + Dash.esc(row.name) + '</b>' + (row.summary ? '<p>' + Dash.esc(row.summary) + '</p>' : '') + '</div>';
+        }
+
+        function renderHeader()
+        {
+            el('phone-input').value = draft.phone;
+            el('headline-input').value = draft.headline;
+            el('who-line').innerHTML = '<b>' + Dash.esc(savedProfile.name || '') + '</b> &middot; ' + Dash.esc(savedProfile.email || '');
+
+            if (savedProfile.resumeFileName)
+            {
+                const parsed = savedProfile.parsedAt ? ' on ' + Dash.esc(Dash.dateTime(savedProfile.parsedAt)) : '';
+                el('source-line').innerHTML = 'Read from your resume <b>' + Dash.esc(savedProfile.resumeFileName) + '</b>' + parsed + '.';
+            }
+            else
+            {
+                el('source-line').innerHTML = 'We have not read a resume for you yet. Apply to a role and this page will fill in automatically.';
+            }
+
+            el('saved-line').innerHTML = savedProfile.correctedAt
+                ? 'Your last corrections were sent for review on ' + Dash.esc(Dash.dateTime(savedProfile.correctedAt)) + '.'
+                : '';
+        }
+
+        function renderSkills(newFrom)
+        {
+            const box = el('skills-rows');
+
+            if (!draft.skills.length)
+            {
+                box.innerHTML = '<p class="d-hint" style="margin-top:14px">No skills yet. Add the skills that best describe your work.</p>';
+                return;
+            }
+
+            const chipsStart = 2 * PANEL_STEP_MS + 240;
+
+            box.innerHTML = '<div class="pr-chips" role="list" aria-label="Your skills">' + draft.skills.map(function (skill, index)
+            {
+                const flagged = skill.verified !== true;
+                const isNew = newFrom !== undefined && index >= newFrom;
+                const delay = revealing ? ' style="--d:' + (chipsStart + Math.min(index, CHIP_STAGGER_CAP) * CHIP_STEP_MS) + 'ms"' : '';
+                const mark = flagged
+                    ? '<span class="pr-mark pr-flag" tabindex="0" role="img" data-tip="' + CandidateKit.attrEsc(FLAG_TIP) + '" aria-label="Needs review. ' + CandidateKit.attrEsc(FLAG_TIP) + '"><i data-lucide="flag"></i></span>'
+                    : '<span class="pr-mark" role="img" aria-label="Confirmed from your resume"><i data-lucide="badge-check"></i></span>';
+
+                return '<div class="pr-chip ' + (flagged ? 'is-flag' : 'is-ok') + (isNew ? ' is-new' : '') + '" role="listitem"' + delay + '>' +
+                    '<span>' + Dash.esc(skill.skill) + '</span>' + mark +
+                    '<button type="button" class="pr-chip-x" data-remove-skill="' + index + '" aria-label="Remove ' + CandidateKit.attrEsc(skill.skill) + '"><i data-lucide="x"></i></button>' +
+                    '</div>';
+            }).join('') + '</div>';
+        }
+
+        function renderGroup(name)
+        {
+            const group = GROUPS[name];
+            const box = el(name + '-rows');
+            const rows = draft[name];
+
+            if (!rows.length)
+            {
+                box.innerHTML = '<p class="d-hint">Nothing added yet. Use the button above to add your first entry.</p>';
+                return;
+            }
+
+            box.innerHTML = rows.map(function (row, index)
+            {
+                const editing = openRows[name][index] === true;
+                const label = group.heading.toLowerCase() + ' ' + (index + 1);
+                let body = '';
+
+                if (editing)
+                {
+                    body = '<div class="d-form-grid">' + group.fields.map(function (field)
+                    {
+                        return fieldHtml(field, row);
+                    }).join('') + '</div>' +
+                        '<p class="error-text" data-error></p>' +
+                        '<div class="pr-row-actions"><button type="button" class="btn btn-sm" data-done="' + name + '" data-index="' + index + '"><i data-lucide="check" style="width:14px;height:14px"></i>Done</button></div>';
+                }
+                else
+                {
+                    body = viewHtml(name, row) + '<p class="error-text" data-error></p>';
+                }
+
+                const edit = editing
+                    ? ''
+                    : '<button type="button" class="btn btn-secondary btn-sm" data-edit="' + name + '" data-index="' + index + '" aria-label="Edit ' + label + '"><i data-lucide="pencil" style="width:14px;height:14px"></i>Edit</button>';
+
+                return '<div class="d-q" data-row="' + name + '" data-index="' + index + '">' +
+                    '<div class="d-q-head"><p>' + group.heading + ' ' + (index + 1) + '</p>' +
+                    '<div class="d-q-actions">' + edit + '<button type="button" class="btn btn-secondary btn-sm" data-remove="' + name + '" data-index="' + index + '" aria-label="Remove ' + label + '"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></div></div>' +
+                    '<div class="d-q-body">' + body + '</div></div>';
+            }).join('');
+        }
+
+        function renderAll()
+        {
+            renderHeader();
+            renderSkills();
+            GROUP_NAMES.forEach(function (name)
+            {
+                renderGroup(name);
+            });
+            renderStrength();
+            Dash.icons();
+        }
+
+        function readForm()
+        {
+            draft.phone = el('phone-input').value;
+            draft.headline = el('headline-input').value;
+
+            GROUP_NAMES.forEach(function (name)
+            {
+                document.querySelectorAll('[data-row="' + name + '"]').forEach(function (rowBox)
+                {
+                    const row = draft[name][Number(rowBox.getAttribute('data-index'))];
+
+                    if (!row)
+                    {
+                        return;
+                    }
+
+                    rowBox.querySelectorAll('[data-field]').forEach(function (input)
+                    {
+                        row[input.getAttribute('data-field')] = input.value;
+                    });
+                });
+            });
+        }
+
+        function isDirty()
+        {
+            readForm();
+            return JSON.stringify(draft) !== savedSnapshot;
+        }
+
+        function clearErrors()
+        {
+            el('skills-error').textContent = '';
+            el('save-error').textContent = '';
+
+            document.querySelectorAll('[data-error]').forEach(function (box)
+            {
+                box.textContent = '';
+            });
+        }
+
+        function validate()
+        {
+            clearErrors();
+
+            const errors = [];
+
+            GROUP_NAMES.forEach(function (name)
+            {
+                draft[name].forEach(function (row, index)
+                {
+                    const missing = missingFields(name, row);
+
+                    if (missing.length)
+                    {
+                        errors.push({ name: name, index: index, text: missingText(missing), missing: missing });
+                    }
+                });
+            });
+
+            if (!errors.length)
+            {
+                return true;
+            }
+
+            const touched = {};
+
+            errors.forEach(function (item)
+            {
+                openRows[item.name][item.index] = true;
+                touched[item.name] = true;
+            });
+
+            Object.keys(touched).forEach(renderGroup);
+            Dash.icons();
+
+            errors.forEach(function (item)
+            {
+                const box = document.querySelector('[data-row="' + item.name + '"][data-index="' + item.index + '"] [data-error]');
+
+                if (box)
+                {
+                    box.textContent = item.text;
+                }
+            });
+
+            const first = errors[0];
+            const firstInput = document.querySelector('[data-row="' + first.name + '"][data-index="' + first.index + '"] [data-field="' + first.missing[0].key + '"]');
+
+            if (firstInput)
+            {
+                firstInput.focus();
+            }
+
+            return false;
+        }
+
+        function announceSkills(text)
+        {
+            el('skills-status').textContent = text;
+        }
+
+        function addSkills()
+        {
+            readForm();
+
+            const input = el('skill-input');
+            const names = input.value.split(',').map(function (part)
+            {
+                return part.trim();
+            }).filter(Boolean);
+
+            el('skills-error').textContent = '';
+
+            if (!names.length)
+            {
+                el('skills-error').textContent = 'Type a skill name first, for example Python. Use commas to add several at once.';
+                input.focus();
+                return;
+            }
+
+            const before = draft.skills.length;
+            const repeats = [];
+
+            names.forEach(function (name)
+            {
+                const lower = name.toLowerCase();
+                const exists = draft.skills.some(function (skill)
+                {
+                    return skill.skill.trim().toLowerCase() === lower;
+                });
+
+                if (exists)
+                {
+                    repeats.push(name);
+                    return;
+                }
+
+                draft.skills.push({ skill: name, verified: false });
+            });
+
+            const added = draft.skills.length - before;
+
+            if (repeats.length)
+            {
+                const list = repeats.length > 1 ? repeats.slice(0, -1).join(', ') + ' and ' + repeats[repeats.length - 1] : repeats[0];
+                el('skills-error').textContent = list + (repeats.length > 1 ? ' are' : ' is') + ' already in your list.';
+            }
+
+            input.value = repeats.join(', ');
+
+            if (added)
+            {
+                renderSkills(before);
+                Dash.icons();
+                renderStrength();
+                announceSkills(added === 1 ? 'Added ' + draft.skills[before].skill + '.' : 'Added ' + added + ' skills.');
+            }
+
+            input.focus();
+        }
+
+        function removeSkillAt(index)
+        {
+            readForm();
+
+            const removed = draft.skills[index];
+
+            if (!removed)
+            {
+                return;
+            }
+
+            draft.skills.splice(index, 1);
+            renderSkills();
+            Dash.icons();
+            renderStrength();
+            announceSkills('Removed ' + removed.skill + '.');
+            el('skill-input').focus();
+        }
+
+        function dropSkill(button)
+        {
+            const chip = button.closest('.pr-chip');
+            const index = Number(button.getAttribute('data-remove-skill'));
+
+            if (!chip || CandidateKit.reducedMotion())
+            {
+                removeSkillAt(index);
+                return;
+            }
+
+            chip.classList.add('is-leaving');
+
+            setTimeout(function ()
+            {
+                if (!chip.parentNode)
+                {
+                    return;
+                }
+
+                removeSkillAt(Array.prototype.indexOf.call(chip.parentNode.children, chip));
+            }, CHIP_LEAVE_MS);
+        }
+
+        function openRow(name, index)
+        {
+            readForm();
+            openRows[name][index] = true;
+            renderGroup(name);
+            Dash.icons();
+
+            const field = document.querySelector('[data-row="' + name + '"][data-index="' + index + '"] [data-field]');
+
+            if (field)
+            {
+                field.focus();
+            }
+        }
+
+        function closeRow(name, index)
+        {
+            readForm();
+
+            const missing = missingFields(name, draft[name][index]);
+            const box = document.querySelector('[data-row="' + name + '"][data-index="' + index + '"] [data-error]');
+
+            if (missing.length)
+            {
+                if (box)
+                {
+                    box.textContent = missingText(missing);
+                }
+
+                return;
+            }
+
+            openRows[name][index] = false;
+            renderGroup(name);
+            Dash.icons();
+            renderStrength();
+
+            const edit = document.querySelector('[data-edit="' + name + '"][data-index="' + index + '"]');
+
+            if (edit)
+            {
+                edit.focus();
+            }
+        }
+
+        function addRow(name)
+        {
+            readForm();
+            draft[name].push(emptyRow(name));
+            openRows[name].push(true);
+            renderGroup(name);
+            Dash.icons();
+            renderStrength();
+
+            const boxes = document.querySelectorAll('[data-row="' + name + '"]');
+            const last = boxes[boxes.length - 1];
+            const firstField = last ? last.querySelector('[data-field]') : null;
+
+            if (firstField)
+            {
+                firstField.focus();
+            }
+        }
+
+        function removeRow(name, index)
+        {
+            readForm();
+            draft[name].splice(index, 1);
+            openRows[name].splice(index, 1);
+            renderGroup(name);
+            Dash.icons();
+            renderStrength();
+
+            const next = document.getElementById(ADD_BUTTONS[name]);
+
+            if (next)
+            {
+                next.focus();
+            }
+        }
+
+        async function load()
+        {
+            el('load-box').innerHTML = Dash.skeletons(3);
+            el('profile-form').classList.add('hidden');
+
+            try
+            {
+                savedProfile = await Api.get('/api/candidate/profile');
+                draft = buildDraft(savedProfile);
+                savedSnapshot = JSON.stringify(draft);
+                resetOpenRows();
+                el('load-box').innerHTML = '';
+
+                const play = shouldReveal(savedProfile) && !CandidateKit.reducedMotion();
+
+                if (savedProfile.parsedAt)
+                {
+                    markRevealed(savedProfile);
+                }
+
+                el('profile-form').classList.remove('hidden');
+
+                if (play)
+                {
+                    revealing = true;
+                    el('profile-form').classList.add('pr-reveal');
+                    revealTimer = setTimeout(endReveal, revealLength());
+                }
+
+                renderAll();
+            }
+            catch (error)
+            {
+                Dash.failInto(el('load-box'), error.message, load);
+            }
+        }
+
+        async function save(event)
+        {
+            event.preventDefault();
+            endReveal();
+            el('cancel-confirm').classList.add('hidden');
+            readForm();
+
+            if (!validate())
+            {
+                return;
+            }
+
+            Dash.setBusy(el('save-btn'), true);
+
+            try
+            {
+                savedProfile = await Api.put('/api/candidate/profile', buildPayload());
+                draft = buildDraft(savedProfile);
+                savedSnapshot = JSON.stringify(draft);
+                resetOpenRows();
+                renderAll();
+                showToast('Your corrections were saved and sent for review.', 'success');
+            }
+            catch (error)
+            {
+                el('save-error').textContent = error.message;
+            }
+
+            Dash.setBusy(el('save-btn'), false);
+        }
+
+        if (user)
+        {
+            Dash.mountShell(
+            {
+                user: user,
+                logo: 'rocket',
+                title: 'My profile',
+                subtitle: 'Check and correct what we read from your resume',
+                search: false,
+                items: Dash.CANDIDATE_NAV,
+                onBell: function ()
+                {
+                    window.location.href = 'candidate.html#notifications';
+                }
+            });
+
+            el('profile-form').addEventListener('submit', save);
+            el('add-skill').addEventListener('click', addSkills);
+
+            el('skill-input').addEventListener('keydown', function (event)
+            {
+                if (event.key === 'Enter')
+                {
+                    event.preventDefault();
+                    addSkills();
+                }
+            });
+
+            GROUP_NAMES.forEach(function (name)
+            {
+                el(ADD_BUTTONS[name]).addEventListener('click', function ()
+                {
+                    endReveal();
+                    addRow(name);
+                });
+            });
+
+            el('profile-form').addEventListener('input', function (event)
+            {
+                if (event.target.id === 'skill-input')
+                {
+                    return;
+                }
+
+                readForm();
+                renderStrength();
+            });
+
+            el('profile-form').addEventListener('click', function (event)
+            {
+                const skillButton = event.target.closest('[data-remove-skill]');
+
+                if (skillButton)
+                {
+                    endReveal();
+                    dropSkill(skillButton);
+                    return;
+                }
+
+                const editButton = event.target.closest('[data-edit]');
+
+                if (editButton)
+                {
+                    endReveal();
+                    openRow(editButton.getAttribute('data-edit'), Number(editButton.getAttribute('data-index')));
+                    return;
+                }
+
+                const doneButton = event.target.closest('[data-done]');
+
+                if (doneButton)
+                {
+                    closeRow(doneButton.getAttribute('data-done'), Number(doneButton.getAttribute('data-index')));
+                    return;
+                }
+
+                const rowButton = event.target.closest('[data-remove]');
+
+                if (rowButton)
+                {
+                    endReveal();
+                    removeRow(rowButton.getAttribute('data-remove'), Number(rowButton.getAttribute('data-index')));
+                }
+            });
+
+            el('cancel-btn').addEventListener('click', function ()
+            {
+                if (isDirty())
+                {
+                    el('cancel-confirm').classList.remove('hidden');
+                    return;
+                }
+
+                showToast('There are no changes to cancel.', 'info');
+            });
+
+            el('discard-btn').addEventListener('click', function ()
+            {
+                endReveal();
+                draft = buildDraft(savedProfile);
+                resetOpenRows();
+                renderAll();
+                el('cancel-confirm').classList.add('hidden');
+                showToast('Your saved profile was restored.', 'info');
+            });
+
+            el('keep-btn').addEventListener('click', function ()
+            {
+                el('cancel-confirm').classList.add('hidden');
+            });
+
+            window.addEventListener('beforeunload', function (event)
+            {
+                if (draft && isDirty())
+                {
+                    event.preventDefault();
+                    event.returnValue = '';
+                }
+            });
+
+            load();
+        }
+    </script>
+    <script src="js/profile-polish.js"></script>
+</body>
+</html>

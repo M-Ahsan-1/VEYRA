@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply – VEYRA</title>
+    <meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#11132F" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#171A45">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/candidate.css">
+</head>
+<body class="theme-candidate">
+    <script src="js/brand.js"></script>
+    <script>showPageLoader(); window.addEventListener('load', hidePageLoader);</script>
+    <div id="content" class="d-content">
+        <section class="d-panel" id="job-panel" aria-label="Job details"></section>
+
+        <section class="d-panel" id="apply-panel" aria-label="Submit your application" hidden>
+            <h3>Apply for this role</h3>
+            <p class="sub">Attach your resume as a PDF and send your application.</p>
+            <div id="apply-root"></div>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    <script src="js/icons.js"></script>
+    <script src="js/illustrations.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/mock.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/candidate-shared.js"></script>
+    <script>
+        const user = guardPage('candidate');
+        const jobId = Dash.intParam('jobId', 0);
+        const jobPanel = document.getElementById('job-panel');
+        const applyPanel = document.getElementById('apply-panel');
+
+        function el(id)
+        {
+            return document.getElementById(id);
+        }
+
+        function skillChips(job)
+        {
+            return (job.skills || []).map(function (item)
+            {
+                const required = item.requirement === 'required';
+                return '<li class="cd-skill">' + Dash.esc(item.skill) + ' (' + (required ? 'required' : 'preferred') + ')</li>';
+            }).join('');
+        }
+
+        function renderJob(job, applied)
+        {
+            const tags = [job.department, job.location, job.type].filter(Boolean).map(function (tag)
+            {
+                return '<span class="d-badge info">' + Dash.esc(tag) + '</span>';
+            }).join('');
+
+            const closed = job.status === 'open' ? '' : Dash.callout('lock', 'This role is closed',
+                '<p>We are no longer accepting applications for this position. Have a look at the other open roles.</p>' +
+                '<a href="candidate.html#jobs" style="display:inline-block;margin-top:8px">Back to open jobs</a>', 'warn');
+
+            const alreadyApplied = applied ? Dash.callout('circle-check', 'You already applied to this role',
+                '<p>Your application is ' + Dash.esc(CandidateKit.label(applied.status).toLowerCase()) + '. You can follow every step from My applications.</p>' +
+                '<a class="btn btn-sm" href="my-applications.html" style="margin-top:10px">View application</a>', 'ok') : '';
+
+            const experience = Number(job.experienceYears) > 0 ? Dash.esc(job.experienceYears) + '+ years' : 'Flexible';
+            const chips = skillChips(job);
+
+            jobPanel.innerHTML = closed + alreadyApplied +
+                '<h3>' + Dash.esc(job.title) + '</h3>' +
+                (tags ? '<div class="d-meta" style="margin-top:8px">' + tags + '</div>' : '') +
+                '<div class="d-metrics" style="margin-top:16px">' +
+                    '<div class="d-metric"><b>' + Dash.esc(job.salary || 'Not disclosed') + '</b><span>Salary</span></div>' +
+                    '<div class="d-metric"><b>' + experience + '</b><span>Experience required</span></div>' +
+                '</div>' +
+                '<p style="margin-top:14px;font-size:.92rem;color:var(--muted,#5B6677);line-height:1.65">' + Dash.esc(job.description || 'No description provided yet.') + '</p>' +
+                (job.qualifications ? '<p style="margin-top:10px;font-size:.88rem;color:var(--muted,#5B6677)"><b style="color:var(--ink,#17233A)">Qualifications:</b> ' + Dash.esc(job.qualifications) + '</p>' : '') +
+                (chips ? '<div class="cd-label" style="margin-top:16px">Skills we are looking for</div><ul class="cd-skills">' + chips + '</ul>' : '');
+        }
+
+        function onApplied()
+        {
+            showToast('Your application was submitted. Good luck!', 'success');
+        }
+
+        async function load()
+        {
+            applyPanel.hidden = true;
+
+            if (!jobId)
+            {
+                jobPanel.innerHTML = Dash.empty('briefcase', 'We could not tell which job you want to apply to. Open a job from your dashboard and choose Apply now.', '<a class="btn btn-sm" href="candidate.html#jobs">Browse open jobs</a>');
+                Dash.icons();
+                return;
+            }
+
+            jobPanel.innerHTML = Dash.skeletons(1);
+
+            try
+            {
+                const results = await Promise.allSettled([Api.get('/api/jobs/' + jobId), Api.get('/api/candidate/applications')]);
+
+                if (results[0].status === 'rejected')
+                {
+                    throw results[0].reason;
+                }
+
+                const job = results[0].value;
+                const applied = results[1].status === 'fulfilled'
+                    ? results[1].value.filter(function (app) { return String(app.jobId) === String(job.id); })[0] || null
+                    : null;
+
+                renderJob(job, applied);
+
+                if (job.status === 'open' && !applied)
+                {
+                    applyPanel.hidden = false;
+                    ApplyFlow.mount(el('apply-root'), job, { cancelHref: 'candidate.html#jobs', cancelLabel: 'Back to jobs', onApplied: onApplied });
+                }
+            }
+            catch (error)
+            {
+                if (error.status === 404)
+                {
+                    jobPanel.innerHTML = Dash.empty('briefcase', 'This job is no longer available. It may have been filled or removed.', '<a class="btn btn-sm" href="candidate.html#jobs">Back to open jobs</a>');
+                }
+                else
+                {
+                    Dash.failInto(jobPanel, error.message, load);
+                }
+            }
+
+            Dash.icons();
+        }
+
+        if (user)
+        {
+            Dash.mountShell(
+            {
+                user: user,
+                logo: 'rocket',
+                title: 'Apply',
+                subtitle: 'One step closer to your next role',
+                search: false,
+                active: 'candidate.html',
+                items: Dash.CANDIDATE_NAV,
+                onBell: CandidateKit.bellHandler
+            });
+
+            load();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job posting – VEYRA</title>
+    <meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#11132F" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#171A45">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/jobs.css">
+    <link rel="stylesheet" href="css/hero.css">
+    <link rel="stylesheet" href="css/polish.css">
+</head>
+<body class="theme-recruiter">
+    <script src="js/brand.js"></script>
+    <script>showPageLoader(); window.addEventListener('load', hidePageLoader);</script>
+    <div id="content" class="d-content">
+        <div class="hero-band hero-slim">
+            <div class="hero-art" aria-hidden="true"><img src="assets/illustrations/create-job.png" alt="" decoding="async"></div>
+            <h2>Describe the role. VEYRA finds the evidence.</h2>
+            <p>The skills you list here decide how every applicant is scored.</p>
+        </div>
+
+        <div id="load-box"></div>
+
+        <form id="job-form" novalidate>
+            <div id="form-error" class="form-error hidden" role="alert"></div>
+
+            <div class="jf-layout">
+                <section class="d-panel" aria-label="Job details">
+                    <div class="d-panel-head">
+                        <div><h3>Job details</h3><p class="sub">Everything candidates see on the posting</p></div>
+                    </div>
+                    <div class="jf-meter" aria-live="polite">
+                        <div class="jf-meter-track"><div class="jf-meter-fill" id="meter-fill"></div></div>
+                        <span class="jf-meter-text" id="meter-text">0% ready</span>
+                    </div>
+                    <div class="d-form-grid">
+                        <div>
+                            <label for="title">Job title <span class="req">*</span></label>
+                            <input type="text" id="title" placeholder="Backend Developer" required>
+                            <div class="error-text" id="title-error"></div>
+                        </div>
+                        <div>
+                            <label for="department">Department</label>
+                            <input type="text" id="department" placeholder="Engineering">
+                        </div>
+                        <div>
+                            <label for="location">Location</label>
+                            <input type="text" id="location" placeholder="Lahore, Pakistan">
+                        </div>
+                        <div>
+                            <label for="type">Employment type</label>
+                            <select id="type">
+                                <option value="Full-time">Full-time</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Contract">Contract</option>
+                                <option value="Internship">Internship</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="salary">Salary</label>
+                            <input type="text" id="salary" placeholder="PKR 250,000 - 350,000">
+                            <p class="d-hint">A range works best, for example PKR 250,000 - 350,000 per month.</p>
+                        </div>
+                        <div>
+                            <label for="experienceYears">Years of experience</label>
+                            <input type="number" id="experienceYears" min="0" max="50" placeholder="3">
+                            <div class="error-text" id="experienceYears-error"></div>
+                        </div>
+                        <div class="full">
+                            <label for="qualifications">Qualifications</label>
+                            <input type="text" id="qualifications" placeholder="BS in Computer Science or equivalent experience">
+                        </div>
+                        <div class="full">
+                            <label for="description">Description <span class="req">*</span><span class="jf-count" id="desc-count">0 / 30</span></label>
+                            <textarea id="description" rows="10" placeholder="Describe the role, the responsibilities and the tools your team uses." required></textarea>
+                            <div class="error-text" id="description-error"></div>
+                            <p class="d-hint">At least 30 characters. Naming concrete tools and technologies helps the AI find the right skills.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <aside class="d-panel jf-side" aria-label="Requirements">
+                    <div class="d-panel-head">
+                        <div><h3>Requirements</h3><p class="sub">What you list here drives how the AI scores applicants</p></div>
+                    </div>
+                    <button type="button" class="btn btn-sm jf-extract" id="extract-btn"><i data-lucide="sparkles"></i>Extract requirements with AI</button>
+                    <p class="error-text" id="extract-error"></p>
+                    <div class="jf-loader" id="extract-loader" role="status" hidden>
+                        <span class="brand" role="img" aria-label="VEYRA"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><polygon class="bm-path l" points="3,5 10.5,5 16,19 16,27"/><polygon class="bm-path r" points="29,5 21.5,5 16,19 16,27"/><circle class="bm-dot" cx="16" cy="8.5" r="2.3"/></svg><span class="brand-text" aria-hidden="true">VEYRA</span></span>
+                        <span>Reading the description for skills</span>
+                    </div>
+                    <div class="d-callout">
+                        <i data-lucide="scale"></i>
+                        <div>
+                            <b>Skills set the AI scoring weights</b>
+                            Required skills weigh more than preferred ones, and high-importance skills count most when applicants are scored. Set them deliberately.
+                        </div>
+                    </div>
+                    <div id="skill-list"></div>
+                    <div class="jf-mix" id="skill-mix"></div>
+                    <div class="jf-add">
+                        <div>
+                            <label for="add-skill-input">Add a skill</label>
+                            <input type="text" id="add-skill-input" placeholder="Type a skill and press Enter" maxlength="60" autocomplete="off">
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" id="add-skill-btn"><i data-lucide="plus"></i>Add</button>
+                    </div>
+                    <p class="error-text" id="skills-error"></p>
+                    <p class="d-hint">AI extraction is a suggestion, not a decision. Edit, remove or add skills before publishing. The final list is yours.</p>
+                </aside>
+            </div>
+
+            <div class="d-actions">
+                <button type="submit" class="btn" id="save-btn">Publish job</button>
+                <a class="btn btn-secondary" href="jobs.html" id="cancel-link">Cancel</a>
+                <span class="jf-dirty" id="dirty-note" role="status" hidden>You have unsaved changes</span>
+            </div>
+        </form>
+    </div>
+
+    <dialog id="leave-dialog" class="jf-dialog" aria-labelledby="leave-title" aria-describedby="leave-text">
+        <div class="jb-dialog-body">
+            <h3 id="leave-title">Leave without saving?</h3>
+            <p id="leave-text">Your changes to this job have not been saved. If you leave now, they are lost.</p>
+            <div class="jb-dialog-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="leave-discard">Discard changes</button>
+                <button type="button" class="btn btn-sm" id="leave-stay" autofocus>Keep editing</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    <script src="js/icons.js"></script>
+    <script src="js/illustrations.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/mock.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/polish.js"></script>
+    <script>
+        const user = guardPage('recruiter');
+        const jobId = Dash.intParam('id', 0);
+        const form = document.getElementById('job-form');
+        const loadBox = document.getElementById('load-box');
+        const formError = document.getElementById('form-error');
+        const extractError = document.getElementById('extract-error');
+        const extractLoader = document.getElementById('extract-loader');
+        const skillsError = document.getElementById('skills-error');
+        const skillList = document.getElementById('skill-list');
+        const extractBtn = document.getElementById('extract-btn');
+        const addSkillBtn = document.getElementById('add-skill-btn');
+        const addSkillInput = document.getElementById('add-skill-input');
+        const saveBtn = document.getElementById('save-btn');
+        const dirtyNote = document.getElementById('dirty-note');
+        const leaveDialog = document.getElementById('leave-dialog');
+        const leaveStay = document.getElementById('leave-stay');
+        const leaveDiscard = document.getElementById('leave-discard');
+        const CROSS = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+        let skills = [];
+        let baseline = null;
+        let dirty = false;
+        let saving = false;
+        let pendingHref = '';
+
+        function el(id)
+        {
+            return document.getElementById(id);
+        }
+
+        function attrEsc(value)
+        {
+            return Dash.esc(String(value)).replace(/"/g, '&quot;');
+        }
+
+        function reducedMotion()
+        {
+            return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
+        function setSkillsError(message)
+        {
+            skillsError.textContent = message || '';
+        }
+
+        function setExtractError(message)
+        {
+            extractError.textContent = message || '';
+        }
+
+        function showFormError(message)
+        {
+            formError.textContent = message;
+            formError.classList.remove('hidden');
+        }
+
+        function hideFormError()
+        {
+            formError.textContent = '';
+            formError.classList.add('hidden');
+        }
+
+        function fieldError(id, message)
+        {
+            el(id + '-error').textContent = message || '';
+            el(id).classList.toggle('invalid', Boolean(message));
+        }
+
+        function titleProblem()
+        {
+            const message = el('title').value.trim() ? '' : 'Please enter a job title.';
+            fieldError('title', message);
+            return message ? { id: 'title', message: message } : null;
+        }
+
+        function descriptionProblem()
+        {
+            const value = el('description').value.trim();
+            let message = '';
+
+            if (!value)
+            {
+                message = 'Please add a job description so candidates know what the role involves.';
+            }
+            else if (value.length < 30)
+            {
+                message = 'The description must be at least 30 characters. You have ' + value.length + ' so far.';
+            }
+
+            fieldError('description', message);
+            return message ? { id: 'description', message: message } : null;
+        }
+
+        function yearsProblem()
+        {
+            const raw = el('experienceYears').value.trim();
+            const years = Number(raw);
+            let message = '';
+
+            if (raw !== '' && (!Number.isFinite(years) || years < 0 || years > 50))
+            {
+                message = 'Years of experience must be a number between 0 and 50.';
+            }
+
+            fieldError('experienceYears', message);
+            return message ? { id: 'experienceYears', message: message } : null;
+        }
+
+        function duplicateProblem()
+        {
+            const seen = {};
+
+            for (let i = 0; i < skills.length; i++)
+            {
+                const name = skills[i].skill.trim();
+                const key = name.toLowerCase();
+
+                if (name && seen[key])
+                {
+                    const message = 'The skill "' + name + '" is listed twice. Remove the duplicate before publishing.';
+                    setSkillsError(message);
+                    return { skillIndex: i, message: message };
+                }
+
+                if (name)
+                {
+                    seen[key] = true;
+                }
+            }
+
+            setSkillsError('');
+            return null;
+        }
+
+        function validateAll()
+        {
+            return [titleProblem(), descriptionProblem(), yearsProblem(), duplicateProblem()].filter(Boolean);
+        }
+
+        function focusProblem(problem)
+        {
+            if (problem.skillIndex !== undefined)
+            {
+                const buttons = skillList.querySelectorAll('.jf-remove');
+
+                if (buttons[problem.skillIndex])
+                {
+                    buttons[problem.skillIndex].focus();
+                }
+
+                return;
+            }
+
+            el(problem.id).focus();
+        }
+
+        function segHtml(index, field, current, options, label)
+        {
+            return '<div class="jf-seg" role="radiogroup" aria-label="' + label + '">' + options.map(function (option)
+            {
+                return '<label class="jf-seg-opt"><input type="radio" name="' + field + '-' + index + '" value="' + option[0] + '" data-field="' + field + '" data-index="' + index + '"' + (option[0] === current ? ' checked' : '') + '><span>' + option[1] + '</span></label>';
+            }).join('') + '</div>';
+        }
+
+        function renderSkills()
+        {
+            if (!skills.length)
+            {
+                skillList.innerHTML = Dash.empty('sparkles', 'No skills yet. Add them below, or extract them from the description with AI.');
+                Dash.icons();
+                updateHelpers();
+                return;
+            }
+
+            let freshCount = 0;
+
+            skillList.innerHTML = '<ul class="jf-chips">' + skills.map(function (item, index)
+            {
+                const fresh = Boolean(item.fresh);
+                const name = Dash.esc(item.skill);
+                const label = attrEsc(item.skill);
+
+                item.fresh = false;
+
+                return '<li class="jf-chip' + (item.requirement === 'preferred' ? ' is-preferred' : '') + (fresh ? ' pop' : '') + '" data-index="' + index + '"' + (fresh ? ' style="--i:' + (freshCount++) + '"' : '') + '>' +
+                    '<div class="jf-chip-top">' +
+                        '<span class="jf-chip-name">' + name + '</span>' +
+                        '<button type="button" class="d-icon-btn jf-remove" data-remove="' + index + '" aria-label="Remove ' + label + '" title="Remove skill">' + CROSS + '</button>' +
+                    '</div>' +
+                    '<div class="jf-chip-ctl">' +
+                        segHtml(index, 'requirement', item.requirement, [['required', 'Required'], ['preferred', 'Preferred']], 'Requirement level for ' + label) +
+                        segHtml(index, 'importance', item.importance, [['high', 'High'], ['medium', 'Medium'], ['low', 'Low']], 'Importance of ' + label) +
+                    '</div>' +
+                    '</li>';
+            }).join('') + '</ul>';
+
+            Dash.icons();
+            updateHelpers();
+        }
+
+        function hasSkill(name)
+        {
+            const key = name.trim().toLowerCase();
+
+            return skills.some(function (item)
+            {
+                return item.skill.trim().toLowerCase() === key;
+            });
+        }
+
+        function collect()
+        {
+            const rawYears = el('experienceYears').value.trim();
+
+            return {
+                title: el('title').value.trim(),
+                department: el('department').value.trim(),
+                location: el('location').value.trim(),
+                type: el('type').value,
+                salary: el('salary').value.trim(),
+                description: el('description').value.trim(),
+                experienceYears: rawYears === '' ? 0 : Number(rawYears),
+                qualifications: el('qualifications').value.trim(),
+                skills: skills
+                    .filter(function (item) { return item.skill.trim() !== ''; })
+                    .map(function (item) { return { skill: item.skill.trim(), requirement: item.requirement, importance: item.importance }; })
+            };
+        }
+
+        function snapshot()
+        {
+            return JSON.stringify(collect());
+        }
+
+        // works out how complete the posting looks and updates the small helpers around the form
+        function updateHelpers()
+        {
+            const data = collect();
+            const len = data.description.length;
+            const checks = [data.title, data.department, data.location, data.salary, data.qualifications, len >= 30, data.skills.length >= 3];
+            const done = checks.filter(Boolean).length;
+            const pct = Math.round((done / checks.length) * 100);
+            const high = data.skills.filter(function (item) { return item.importance === 'high'; }).length;
+            const required = data.skills.filter(function (item) { return item.requirement === 'required'; }).length;
+
+            el('meter-fill').style.width = pct + '%';
+            el('meter-text').textContent = pct + '% ready';
+            el('desc-count').textContent = len + ' / 30';
+            el('desc-count').classList.toggle('is-ok', len >= 30);
+            el('skill-mix').innerHTML = data.skills.length
+                ? '<span>' + required + ' required</span><span>' + (data.skills.length - required) + ' preferred</span><span>' + high + ' high importance</span>'
+                : '';
+        }
+
+        function refreshDirty()
+        {
+            updateHelpers();
+            dirty = baseline !== null && snapshot() !== baseline;
+            dirtyNote.hidden = !dirty;
+        }
+
+        function setBaseline()
+        {
+            baseline = snapshot();
+            refreshDirty();
+        }
+
+        function liveValidate(validator)
+        {
+            return function ()
+            {
+                validator();
+
+                if (!formError.classList.contains('hidden') && !validateAll().length)
+                {
+                    hideFormError();
+                }
+            };
+        }
+
+        function addSkillsFromInput()
+        {
+            const names = addSkillInput.value.split(',').map(function (part) { return part.trim(); }).filter(Boolean);
+            let added = 0;
+            let duplicate = '';
+
+            if (!names.length)
+            {
+                setSkillsError('Type a skill name first, then press Enter.');
+                addSkillInput.focus();
+                return;
+            }
+
+            names.forEach(function (name)
+            {
+                if (hasSkill(name))
+                {
+                    duplicate = duplicate || name;
+                    return;
+                }
+
+                skills.push({ skill: name, requirement: 'required', importance: 'medium', fresh: true });
+                added++;
+            });
+
+            setSkillsError(duplicate ? '"' + duplicate + '" is already in the list.' : '');
+
+            if (added)
+            {
+                addSkillInput.value = '';
+                renderSkills();
+                refreshDirty();
+            }
+
+            addSkillInput.focus();
+        }
+
+        async function extractRequirements()
+        {
+            const description = el('description').value.trim();
+            setExtractError('');
+
+            if (!description)
+            {
+                setExtractError('Write the job description first. The AI reads it to find the skills you need.');
+                el('description').focus();
+                return;
+            }
+
+            Dash.setBusy(extractBtn, true);
+            extractLoader.hidden = false;
+            skillList.setAttribute('aria-busy', 'true');
+            skillList.style.opacity = '0.45';
+
+            try
+            {
+                const data = await Api.post('/api/jobs/extract-requirements',
+                {
+                    title: el('title').value.trim(),
+                    description: description
+                });
+
+                let added = 0;
+
+                (data.skills || []).forEach(function (item)
+                {
+                    const name = String(item.skill || '').trim();
+
+                    if (!name || hasSkill(name))
+                    {
+                        return;
+                    }
+
+                    skills.push(
+                    {
+                        skill: name,
+                        requirement: item.requirement === 'preferred' ? 'preferred' : 'required',
+                        importance: ['high', 'medium', 'low'].indexOf(item.importance) !== -1 ? item.importance : 'medium',
+                        fresh: true
+                    });
+                    added++;
+                });
+
+                renderSkills();
+                setSkillsError('');
+                refreshDirty();
+
+                if (added)
+                {
+                    showToast(added + (added === 1 ? ' requirement' : ' requirements') + ' found. Edit them if needed before publishing.', 'success');
+                }
+                else
+                {
+                    showToast('No new requirements found. Add more detail to the description, or add skills yourself.', 'info');
+                }
+            }
+            catch (error)
+            {
+                setExtractError(error.message);
+            }
+
+            extractLoader.hidden = true;
+            skillList.removeAttribute('aria-busy');
+            skillList.style.opacity = '';
+            Dash.setBusy(extractBtn, false);
+        }
+
+        function flash(message)
+        {
+            try
+            {
+                sessionStorage.setItem('soryn-flash', message);
+            }
+            catch (error)
+            {
+                showToast(message, 'success');
+            }
+        }
+
+        async function save(event)
+        {
+            event.preventDefault();
+            hideFormError();
+
+            const problems = validateAll();
+
+            if (problems.length)
+            {
+                showFormError(problems[0].message);
+                focusProblem(problems[0]);
+                return;
+            }
+
+            Dash.setBusy(saveBtn, true);
+
+            try
+            {
+                if (jobId)
+                {
+                    await Api.put('/api/jobs/' + jobId, collect());
+                }
+                else
+                {
+                    await Api.post('/api/jobs', collect());
+                }
+
+                saving = true;
+                flash(jobId ? 'Job updated.' : 'Job published.');
+                window.location.href = 'jobs.html';
+            }
+            catch (error)
+            {
+                Dash.setBusy(saveBtn, false);
+                showFormError(error.message);
+            }
+        }
+
+        function prefill(job)
+        {
+            el('title').value = job.title || '';
+            el('department').value = job.department || '';
+            el('location').value = job.location || '';
+            el('type').value = job.type || 'Full-time';
+            el('salary').value = job.salary || '';
+            el('experienceYears').value = job.experienceYears === undefined || job.experienceYears === null ? '' : job.experienceYears;
+            el('qualifications').value = job.qualifications || '';
+            el('description').value = job.description || '';
+            skills = (job.skills || []).map(function (item)
+            {
+                return { skill: item.skill || '', requirement: item.requirement === 'preferred' ? 'preferred' : 'required', importance: item.importance || 'medium' };
+            });
+            renderSkills();
+        }
+
+        async function loadJob()
+        {
+            form.classList.add('hidden');
+            loadBox.innerHTML = Dash.skeletons(2);
+
+            try
+            {
+                const job = await Api.get('/api/jobs/' + jobId);
+                prefill(job);
+                setBaseline();
+                loadBox.innerHTML = '';
+                form.classList.remove('hidden');
+            }
+            catch (error)
+            {
+                Dash.failInto(loadBox, error.message, loadJob);
+
+                const empty = loadBox.querySelector('.d-empty');
+
+                if (empty)
+                {
+                    const back = document.createElement('a');
+                    back.className = 'btn btn-secondary btn-sm';
+                    back.href = 'jobs.html';
+                    back.textContent = 'Back to jobs';
+                    empty.appendChild(back);
+                }
+            }
+
+            Dash.icons();
+        }
+
+        function load()
+        {
+            saveBtn.textContent = jobId ? 'Save changes' : 'Publish job';
+
+            if (jobId)
+            {
+                loadJob();
+            }
+            else
+            {
+                renderSkills();
+                setBaseline();
+            }
+        }
+
+        if (user)
+        {
+            form.addEventListener('submit', save);
+            form.addEventListener('input', refreshDirty);
+            form.addEventListener('change', refreshDirty);
+            extractBtn.addEventListener('click', extractRequirements);
+            addSkillBtn.addEventListener('click', addSkillsFromInput);
+
+            addSkillInput.addEventListener('keydown', function (event)
+            {
+                if (event.key === 'Enter')
+                {
+                    event.preventDefault();
+                    addSkillsFromInput();
+                }
+            });
+
+            addSkillInput.addEventListener('input', function ()
+            {
+                setSkillsError('');
+            });
+
+            skillList.addEventListener('change', function (event)
+            {
+                const target = event.target;
+                const field = target.getAttribute('data-field');
+                const index = Number(target.getAttribute('data-index'));
+
+                if ((field === 'requirement' || field === 'importance') && skills[index])
+                {
+                    skills[index][field] = target.value;
+
+                    if (field === 'requirement')
+                    {
+                        target.closest('.jf-chip').classList.toggle('is-preferred', target.value === 'preferred');
+                    }
+                }
+            });
+
+            skillList.addEventListener('click', function (event)
+            {
+                const button = event.target.closest('[data-remove]');
+
+                if (!button)
+                {
+                    return;
+                }
+
+                const index = Number(button.getAttribute('data-remove'));
+                const chip = button.closest('.jf-chip');
+
+                if (chip)
+                {
+                    chip.classList.add('jf-leave');
+                }
+
+                window.setTimeout(function ()
+                {
+                    skills.splice(index, 1);
+                    liveValidate(duplicateProblem)();
+                    renderSkills();
+                    refreshDirty();
+                    addSkillInput.focus();
+                }, reducedMotion() ? 0 : 160);
+            });
+
+            el('title').addEventListener('input', liveValidate(titleProblem));
+            el('description').addEventListener('input', liveValidate(descriptionProblem));
+            el('experienceYears').addEventListener('input', liveValidate(yearsProblem));
+
+            document.addEventListener('click', function (event)
+            {
+                if (!dirty || saving || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+                {
+                    return;
+                }
+
+                const link = event.target.closest('a[href]');
+
+                if (!link || link.target === '_blank' || link.hasAttribute('download'))
+                {
+                    return;
+                }
+
+                const href = link.getAttribute('href');
+
+                if (!href || href.charAt(0) === '#' || href.indexOf('javascript:') === 0 || href.indexOf('mailto:') === 0)
+                {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+                pendingHref = link.href;
+                leaveDialog.showModal();
+            }, true);
+
+            window.addEventListener('beforeunload', function (event)
+            {
+                if (dirty && !saving)
+                {
+                    event.preventDefault();
+                    event.returnValue = '';
+                }
+            });
+
+            leaveStay.addEventListener('click', function ()
+            {
+                leaveDialog.close();
+            });
+
+            leaveDiscard.addEventListener('click', function ()
+            {
+                dirty = false;
+                leaveDialog.close();
+                window.location.href = pendingHref || 'jobs.html';
+            });
+
+            leaveDialog.addEventListener('click', function (event)
+            {
+                if (event.target === leaveDialog)
+                {
+                    leaveDialog.close();
+                }
+            });
+
+            Dash.mountShell(
+            {
+                user: user,
+                logo: 'sparkles',
+                title: jobId ? 'Edit job' : 'Post a job',
+                subtitle: jobId ? 'Update the details, skills and requirements' : 'Create a posting and let the AI suggest requirements',
+                search: true,
+                items: Dash.RECRUITER_NAV,
+                active: 'jobs.html',
+                onBell: function ()
+                {
+                    showToast('You have no new notifications.', 'info');
+                }
+            });
+
+            load();
+        }
+    </script>
+</body>
+</html>
