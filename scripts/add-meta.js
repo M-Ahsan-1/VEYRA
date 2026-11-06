@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 // swap this for the real vercel url once the first deploy gives you one
-const SITE = "https://veyra.vercel.app";
+const SITE = "https://veyra-sand.vercel.app";
 
 const DESC =
   "VEYRA is an AI powered hiring platform. Recruiters post jobs, screen resumes and generate interview questions, while candidates find roles and apply in minutes.";
