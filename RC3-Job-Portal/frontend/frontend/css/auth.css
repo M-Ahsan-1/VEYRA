@@ -588,11 +588,24 @@
         padding: var(--sp-4) var(--sp-5);
     }
 
-    .scene-wrap,
     .stage-line,
     .stage-points
     {
         display: none;
+    }
+
+    .scene-wrap
+    {
+        width: 100%;
+        max-width: 340px;
+        margin: 0 auto;
+    }
+
+    .scene-art,
+    .scene svg
+    {
+        max-height: 170px;
+        object-position: center bottom;
     }
 
     .stage-tagline
