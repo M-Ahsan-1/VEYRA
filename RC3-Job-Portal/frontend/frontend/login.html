@@ -64,10 +64,6 @@
                     New here? <a href="register.html">Create an account</a>
                 </div>
 
-                <div id="demo-hint" class="auth-footer hidden">
-                    Demo accounts (password 12345678):<br>
-                    recruiter@test.com or candidate@test.com
-                </div>
             </div>
         </main>
     </div>
@@ -93,11 +89,6 @@
         if (getToken() && existingUser)
         {
             authRedirect(dashboardFor(existingUser.role), 0);
-        }
-
-        if (USE_MOCK)
-        {
-            document.getElementById('demo-hint').classList.remove('hidden');
         }
 
         const validateEmail = authBindField(emailInput, function ()

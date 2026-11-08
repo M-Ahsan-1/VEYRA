@@ -612,7 +612,17 @@
 {
     .role-cards
     {
-        grid-template-columns: 1fr;
+        gap: var(--sp-2);
+    }
+
+    .role-card
+    {
+        padding: 10px;
+    }
+
+    .role-art
+    {
+        height: 48px;
     }
 }
 
