@@ -648,3 +648,71 @@
         animation: none !important;
     }
 }
+
+@media (max-width: 900px)
+{
+    body.auth-fit .auth-shell
+    {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 520px;
+    }
+
+    body.auth-fit .auth-stage
+    {
+        flex: 1 1 auto;
+        min-height: 0;
+        gap: var(--sp-2);
+        padding: var(--sp-3) var(--sp-5);
+        overflow: hidden;
+    }
+
+    body.auth-fit .scene-wrap
+    {
+        position: relative;
+        flex: 1 1 0;
+        min-height: 0;
+        max-width: none;
+        margin: 0;
+    }
+
+    body.auth-fit .scene-wrap > *
+    {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    body.auth-fit .scene-art
+    {
+        max-height: none;
+        object-fit: contain;
+        object-position: center;
+    }
+
+    body.auth-fit .scene svg
+    {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+    }
+
+    body.auth-fit .auth-panel
+    {
+        flex: none;
+        padding: var(--sp-4) var(--sp-4) var(--sp-4);
+    }
+
+    body.auth-fit .auth-form .subtitle
+    {
+        margin: 4px 0 var(--sp-3);
+    }
+
+    body.auth-fit .auth-form .auth-footer
+    {
+        margin-top: var(--sp-3);
+    }
+}
