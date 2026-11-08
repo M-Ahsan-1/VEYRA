@@ -265,3 +265,20 @@
 .vx-tk-steps s{flex:1;height:3px;background:var(--line)}
 .vx-tk-steps s.on{background:var(--accent)}
 @media (prefers-reduced-motion:reduce){.vx-jr-seg,.vx-jr-pulse{animation:none}}
+
+@media (max-width: 1000px)
+{
+    .vx-cols,
+    .vx-cols.even,
+    .rd-cols
+    {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.vx-cols > *,
+.rd-cols > *,
+.rd-stack > *
+{
+    min-width: 0;
+}
